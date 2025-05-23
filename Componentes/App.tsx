@@ -123,6 +123,6 @@ export default function App(){
       </View>
       </ScrollView>
     </View>
-  )
+  ) 
 }
 

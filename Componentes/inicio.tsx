@@ -1,5 +1,6 @@
 import React from 'react';
 import { View,Text, StyleSheet, Image, TextInput, TouchableOpacity, FlatList, ScrollView, ImageBackground } from 'react-native';
+import Registro from './registro';
 const estilos = StyleSheet.create({
   contenedor:{
     opacity: 1
@@ -42,7 +43,7 @@ const estilos = StyleSheet.create({
 })
 export default function Inicio(){
    return(
-      <ImageBackground source={require('./image/twelight.jpg')} imageStyle={estilos.imagen} width={100} height={500}>
+      <ImageBackground source={require('../image/twelight.jpg')} imageStyle={estilos.imagen} width={100} height={500}>
         <View>
           <Text style={estilos.texto}>Usuario</Text>
           <TextInput placeholder='Usuario' style={estilos.input}></TextInput>
