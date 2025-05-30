@@ -1,61 +1,37 @@
 import React from 'react';
 import { View,Text, StyleSheet, Image, TextInput, TouchableOpacity, FlatList, ScrollView, ImageBackground } from 'react-native';
-import Registro from './registro';
-const estilos = StyleSheet.create({
-  contenedor:{
-    opacity: 1
-  },
-  texto:{
-    fontSize:50,
-    color:'yellow',
-    backgroundColor:'black',
-    textAlign:'center',
-    borderRadius:30,
-    shadowColor: 'red',
-    margin: '15%',
-    opacity: 1
-  },
-  texto2:{
-    fontSize:40,
-    color:'blue',
-    backgroundColor:'grey',
-    textAlign:'center',
-    borderRadius:30
-  },
-  input:{
-    fontSize:20,
-    backgroundColor:'yellow',
-    borderColor: 'black',
-    borderBlockColor: 'black',
-    borderWidth: 3,
-    borderRadius: 20,
-    marginTop: '0%',
-    marginLeft: '10%',
-    marginRight: '10%',
-    textAlign:'center',
-    opacity: 1
-  },
-  imagen:{
-    width:'100%',
-    height:'100%',
-    opacity: 0.5
+import estilos from './Style';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootList } from './App';
+
+type InicioScreen = StackNavigationProp<RootList, 'Inicio'>
+type Props = {
+  navigation: InicioScreen
+}
+export default function Inicio({navigation}:Props){
+  const handleIniciar=()=>{
+    navigation.navigate('Tareas');
   }
-})
-export default function Inicio(){
+  const handleRegistro=()=>{
+    navigation.navigate('Registro')
+  }
    return(
-      <ImageBackground source={require('../image/twelight.jpg')} imageStyle={estilos.imagen} width={100} height={500}>
+    <ScrollView>
+      <ImageBackground source={require('../image/twelight.jpg')} imageStyle={estilos.imagenini} width={100} height={500}>
         <View>
-          <Text style={estilos.texto}>Usuario</Text>
-          <TextInput placeholder='Usuario' style={estilos.input}></TextInput>
-          <Text style={estilos.texto}>Password</Text>
-          <TextInput placeholder='Password' style={estilos.input}></TextInput>
-            <TouchableOpacity style={estilos.texto}>
-              <Text style={estilos.input}>Ingresar</Text>
+          <Text style={estilos.textoini}>Usuario</Text>
+          <TextInput placeholder='Usuario' style={estilos.inputini}></TextInput>
+          <Text style={estilos.textoini}>Password</Text>
+          <TextInput placeholder='Password' style={estilos.inputini}></TextInput>
+            <TouchableOpacity style={estilos.textoini} onPress={handleIniciar}>
+              <Text style={estilos.inputini}>Ingresar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={estilos.texto}>
-              <Text style={estilos.input}>Registrar</Text>
+            <TouchableOpacity style={estilos.textoini} onPress={handleRegistro}>
+              <Text style={estilos.inputini}>Registrar</Text>
             </TouchableOpacity>
        </View>
       </ImageBackground>
+    </ScrollView>
+      
    )
   }
