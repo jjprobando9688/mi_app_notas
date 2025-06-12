@@ -1,9 +1,10 @@
 import React from 'react';
 import { View,Text, StyleSheet, Image, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import estilos from './Style';
+import RenderItem from './Funcionalidades';
 const tasks = [
   { titulo:"Estudiar",
-    done:false,
+    done:true,
     date:new Date()
   },
   { titulo:"Jugar",
@@ -17,18 +18,17 @@ const tasks = [
   {
     titulo:"Comer",
     done:false,
-    date:Date()
+    date:new Date()
   }
 ];
-interface Task{
+export interface Task{
   titulo:string,
   done:boolean,
   date:Date
 }
-function renderItem({item}:{item:Task}){
-  return <Text style={estilos.textoApp5}>{item.titulo}</Text>
-}
 export default function Tareas(){
+  const markDone=()=>{}
+  const deleteF=()=>{}
   return(
     <View style={estilos.contenedorApp}>
       <ScrollView>
@@ -40,7 +40,16 @@ export default function Tareas(){
         </TouchableOpacity>
       </View>
       <View>
-        <FlatList renderItem={renderItem} data={tasks}/>
+        <FlatList 
+        renderItem={({item})=>(
+          <RenderItem
+          item={item}
+          markDone={markDone}
+          deleteF={deleteF}
+          />
+        )}
+        data={tasks}
+        />
       </View>
       </ScrollView>
     </View>

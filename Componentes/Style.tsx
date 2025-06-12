@@ -173,6 +173,35 @@ const estilos = StyleSheet.create({
         alignSelf: 'center',
         padding: 10,
         margin:5
+    },
+    textDone:{
+        textDecorationLine:'line-through',
+        fontSize:30,
+        color:'rgba(0, 0, 0, 0.72)',
+        backgroundColor:'rgba(51, 138, 252, 0.86)',
+        textAlign:'center',
+        borderRadius:20,
+        justifyContent:'center',
+        textAlignVertical:'center',
+        display:'flex',
+        alignItems:'center',
+        alignSelf: 'center',
+        padding: 10,
+        margin:5
+    },
+    botonEliminar:{
+        fontSize:20,
+        color:'rgba(0, 0, 0, 0.72)',
+        backgroundColor:'rgba(255, 0, 0, 0.76)',
+        textAlign:'center',
+        borderRadius:20,
+        justifyContent:'center',
+        textAlignVertical:'center',
+        display:'flex',
+        alignItems:'center',
+        alignSelf: 'center',
+        padding: 10,
+        margin:5
     }
 });
 export default estilos;
