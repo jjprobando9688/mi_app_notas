@@ -1,41 +1,41 @@
-import React from 'react';
+import React, {use, useState} from 'react';
 import { View,Text, StyleSheet, Image, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import estilos from './Style';
 import RenderItem from './Funcionalidades';
 const tasks = [
-  { titulo:"Estudiar",
-    done:true,
-    date:new Date()
-  },
-  { titulo:"Jugar",
-    done:false,
-    date:new Date()
-  },
-  { titulo:"Caminar",
-    done:false,
-    date:new Date()
-  },
-  {
-    titulo:"Comer",
-    done:false,
-    date:new Date()
-  }
+
 ];
 export interface Task{
   titulo:string,
   done:boolean,
   date:Date
 }
+
 export default function Tareas(){
+  const [text, setText]=useState('')
+  const [tasks,setTasks]=useState<Task[]>([])
+  const addTask=()=>{
+    const tmp=[...tasks]
+    const newTask={
+      titulo:text,
+      done:false,
+      date:new Date()
+    }
+    tmp.push(newTask)
+    setTasks(tmp)
+    setText('')
+  }
   const markDone=()=>{}
-  const deleteF=()=>{}
+  const deleteF=()=>{
+    
+  }
   return(
     <View style={estilos.contenedorApp}>
       <ScrollView>
         <Text style={estilos.textoApp}>Tareas🗒️</Text>
       <View>
-        <TextInput placeholder='Escribe' style={estilos.inputApp}></TextInput>
-        <TouchableOpacity style={estilos.botonApp}>
+        <TextInput placeholder='Escribe' style={estilos.inputApp} value={text} onChangeText={(t:string)=>setText(t)}></TextInput>
+        <TouchableOpacity style={estilos.botonApp} onPress={addTask}>
           <Text style={estilos.textoApp4}>Agregar</Text>
         </TouchableOpacity>
       </View>
