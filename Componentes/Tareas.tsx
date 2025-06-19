@@ -1,7 +1,8 @@
-import React, {use, useState} from 'react';
+import React, {use, useState, useEffect} from 'react';
 import { View,Text, StyleSheet, Image, TextInput, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import estilos from './Style';
 import RenderItem from './Funcionalidades';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const tasks = [
 
 ];
@@ -14,6 +15,28 @@ export interface Task{
 export default function Tareas(){
   const [text, setText]=useState('')
   const [tasks,setTasks]=useState<Task[]>([])
+  const storeData = async (value:Task[])=>{
+    try {
+      await AsyncStorage.setItem('Todo',JSON.stringify(value))
+    } 
+    catch (error) {
+      
+    }
+  }
+  const getData = async()=>{
+    try {
+      const value = await AsyncStorage.getItem('Todo')
+      if (value !== null) {
+        const Tlocals = JSON.parse(value)
+        setTasks(Tlocals)
+      }
+    } catch (error) {
+      
+    }
+  }
+  // useEffect(()=>{
+  //   getData()
+  // })
   const addTask=()=>{
     const tmp=[...tasks]
     const newTask={
@@ -23,11 +46,24 @@ export default function Tareas(){
     }
     tmp.push(newTask)
     setTasks(tmp)
+    // storeData(tmp)
     setText('')
   }
-  const markDone=()=>{}
-  const deleteF=()=>{
-    
+  const markDone=(task:Task)=>{
+    const tmp = [...tasks]
+    const index=tmp.findIndex(tu=>tu.titulo===task.titulo)
+    const hola=tmp[index]
+    hola.done=!hola.done
+    setTasks(tmp)
+    // storeData(tmp)
+  }
+
+  const deleteF=(task:Task)=>{
+    const tmp = [...tasks]
+    const index=tmp.findIndex(tu=>tu.titulo===task.titulo)
+    tmp.splice(index,1)
+    setTasks(tmp)
+    // storeData(tmp)
   }
   return(
     <View style={estilos.contenedorApp}>
