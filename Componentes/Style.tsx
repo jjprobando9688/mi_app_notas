@@ -158,7 +158,8 @@ const estilos = StyleSheet.create({
         display:'flex',
         alignItems:'center',
         alignSelf: 'center',
-        padding: 10
+        padding: 10,
+        marginBottom: 10
     },
     textoApp5:{
         fontSize:30,

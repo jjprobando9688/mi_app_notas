@@ -9,19 +9,23 @@ interface ItemProps{
     deleteF: (task:Task) => void
 }
 export default function RenderItem({item,markDone,deleteF}:ItemProps){
+  const taskDate = new Date(item.date);
   return (
-    <View>
-      <TouchableOpacity onPress={()=>markDone(item)}>
-        <Text style={item.done ? estilos.textDone:estilos.textoApp5}>{item.titulo}</Text>
-          {
-        item.done &&
-          (
-            <TouchableOpacity onPress={()=>deleteF(item)}>
-              <Text style={estilos.botonEliminar}>Eliminar</Text>
-            </TouchableOpacity>
-          )
-        }
-        <Text style={estilos.textoApp5}>{item.date.toDateString()}</Text>
+    <View style={{ marginBottom: 15, backgroundColor: '#fff', padding: 10, borderRadius: 10 }}>
+      <TouchableOpacity onPress={() => markDone(item)}>
+        <Text style={item.done ? estilos.textDone : estilos.textoApp5}>
+          {item.titulo}
+        </Text>
       </TouchableOpacity>
+      
+      <Text style={estilos.textoApp5}>
+        {taskDate.toDateString()}
+      </Text>
+
+      {item.done && (
+        <TouchableOpacity onPress={() => deleteF(item)}>
+          <Text style={estilos.botonEliminar}>Eliminar</Text>
+        </TouchableOpacity>
+      )}
     </View>
 );}
