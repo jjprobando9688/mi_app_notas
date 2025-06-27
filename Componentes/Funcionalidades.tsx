@@ -6,25 +6,64 @@ import { Task } from "./Tareas";
 interface ItemProps{
     item:Task
     markDone: (task:Task) => void
-    deleteF: (task:Task) => void
+    deleteF: () => void
 }
 export default function RenderItem({item,markDone,deleteF}:ItemProps){
-  const taskDate = new Date(item.date);
+  const formatDateTime=(date:Date)=>{
+    return date.toLocaleString('es-Es',{
+      year:'numeric',
+      month:'short',
+      day:'numeric',
+      hour:'2-digit',
+      minute:'2-digit'
+    }
+    )
+  }
+  const isOverdue=()=>{
+    return new Date() > item.date && !item.done
+  }
+  const getStatusText=()=>{
+    if(item.done){
+      return 'Completada ✅'
+    }
+    if(isOverdue()){
+      return '⏰ Vencida'
+    }
+    return '⌛ Pendiente'
+  }
+
+  const getStatusStyle=()=>{
+    if(item.done){
+      return estilos.Completed
+    }
+    if(isOverdue()){
+      return estilos.Overdue
+    }
+    return estilos.Pendiente
+  }
+
   return (
-    <View style={{ marginBottom: 15, backgroundColor: '#fff', padding: 10, borderRadius: 10 }}>
-      <TouchableOpacity onPress={() => markDone(item)}>
+    <View style={[estilos.dataTasks, isOverdue() && estilos.overT]}>
+      <TouchableOpacity 
+      style={estilos.taskContent}
+      onPress={() => markDone(item)}>
         <Text style={item.done ? estilos.textDone : estilos.textoApp5}>
           {item.titulo}
         </Text>
-      </TouchableOpacity>
-      
-      <Text style={estilos.textoApp5}>
-        {taskDate.toDateString()}
+        <Text 
+        style={estilos.textoApp5}>
+        {formatDateTime(item.date)}
       </Text>
+      <Text
+        style={[estilos.statustext,getStatusStyle()]}>
+        {getStatusText()}
+      </Text>
+      </TouchableOpacity>
 
       {item.done && (
-        <TouchableOpacity onPress={() => deleteF(item)}>
-          <Text style={estilos.botonEliminar}>Eliminar</Text>
+        <TouchableOpacity 
+        onPress={deleteF}>
+          <Text style={estilos.botonEliminar}>🗑️Eliminar</Text>
         </TouchableOpacity>
       )}
     </View>

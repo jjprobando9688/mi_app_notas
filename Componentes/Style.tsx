@@ -203,6 +203,30 @@ const estilos = StyleSheet.create({
         alignSelf: 'center',
         padding: 10,
         margin:5
+    },
+    DTC:{
+
+    },
+    Completed:{
+
+    },
+    dataTasks:{
+
+    },
+    overT:{
+
+    },
+    taskContent:{
+
+    },
+    statustext:{
+
+    },
+    Overdue:{
+
+    },
+    Pendiente:{
+        
     }
 });
 export default estilos;

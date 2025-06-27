@@ -5,13 +5,14 @@ import RenderItem from './Funcionalidades';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const tasks = [
+// const tasks = [
 
-];
+// ];
 export interface Task{
   titulo:string,
   done:boolean,
-  date:Date
+  date:Date,
+  id:string
 }
 
 export default function Tareas(){
@@ -20,6 +21,25 @@ export default function Tareas(){
   const [showDatePicker,setshowDatePicker]=useState(false)
   const [showTimePicker,setshowTimePicker]=useState(false)
   const [selectDate,setselectDate]=useState(new Date)
+
+  const addTask=()=>{
+    if(text.trim() === ''){
+      Alert.alert('Por favor ingrese una Tarea');
+      return;
+    }
+    const tmp=[...tasks]
+    const newTask={
+      id:Date.now().toString(),
+      titulo:text.trim(),
+      done:false,
+      date:selectDate
+    }
+    tmp.push(newTask)
+    setTasks(tmp)
+    storeData(tmp)
+    setText('')
+    setselectDate(new Date())
+  }
 
 
   const storeData = async (value:Task[])=>{
@@ -48,22 +68,10 @@ export default function Tareas(){
   useEffect(()=>{
     getData()
   },[])
-  const addTask=()=>{
-    const tmp=[...tasks]
-    const newTask={
-      titulo:text.trim(),
-      done:false,
-      date:selectDate
-    }
-    tmp.push(newTask)
-    setTasks(tmp)
-    storeData(tmp)
-    setText('')
-    setselectDate(new Date())
-  }
+  
   const markDone=(task:Task)=>{
     const tmp = [...tasks]
-    const index=tmp.findIndex(tu=>tu.titulo===task.titulo)
+    const index=tmp.findIndex(tu=>tu.id===task.id)
     if(index !== -1){
       tmp[index].done = !tmp[index].done
       setTasks(tmp)
@@ -71,7 +79,7 @@ export default function Tareas(){
     }
   }
 
-  const deleteF=(task:Task)=>{
+  const deleteF=(taskId:string)=>{
     Alert.alert(
       '¿Desea Eliminar?',
       'Eliminar la tarea',
@@ -80,12 +88,9 @@ export default function Tareas(){
         {text:'Eliminar',style:'destructive',
           onPress:()=>{
             const tmp = [...tasks]
-            const index=tmp.findIndex(tu=>tu.titulo===task.titulo)
-            if(index !== -1){
-              tmp.splice(index,1)
-              setTasks(tmp)
-              storeData(tmp)
-            }
+            const index=tmp.filter(tu=>tu.id !== taskId)
+            setTasks(tmp)
+            storeData(tmp)
           }
         }
       ]
@@ -118,7 +123,6 @@ export default function Tareas(){
       hour:'2-digit',
       minute:'2-digit'
     }
-
     )
   }
 
@@ -127,9 +131,19 @@ export default function Tareas(){
       <ScrollView>
         <Text style={estilos.textoApp}>Tareas🗒️</Text>
       <View>
-        <TextInput placeholder='Escribe' style={estilos.inputApp} value={text} onChangeText={(t:string)=>setText(t)}></TextInput>
-        <TouchableOpacity style={estilos.botonApp} onPress={addTask}>
-          <Text style={estilos.textoApp4}>Agregar</Text>
+        <TextInput 
+        placeholder='Escribe' 
+        style={estilos.inputApp} 
+        value={text} 
+        onChangeText={(t:string)=>setText(t)}
+        multiline={true}
+        numberOfLines={2}>
+        </TextInput>
+        <TouchableOpacity 
+        style={estilos.botonApp} 
+        onPress={addTask}>
+          <Text style={estilos.textoApp4}>
+            Agregar</Text>
         </TouchableOpacity>
       </View>
       <View>
@@ -144,16 +158,17 @@ export default function Tareas(){
         <Text>
           Programado para: {formatDateTime(selectDate)}
         </Text>
-        <FlatList 
+        <FlatList
+        data={tasks}
+        keyExtractor={(item)=>item.id} 
         renderItem={({item})=>(
           <RenderItem
           item={item}
           markDone={markDone}
-          deleteF={deleteF}
+          deleteF={()=>deleteF(item.id)}
           />
         )}
-        data={tasks}
-        keyExtractor={(item, index)=>`${item.titulo}-${index}`}
+        showsVerticalScrollIndicator={false}
         />
       </View>
       {showDatePicker &&(
