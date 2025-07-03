@@ -1,47 +1,72 @@
 import React, {useState, useEffect} from 'react';
-import { View,Text, StyleSheet, Image, TextInput, TouchableOpacity, FlatList, ScrollView, Alert } from 'react-native';
+import { View,Text, StyleSheet, Image, TextInput, TouchableOpacity, FlatList, ScrollView, Alert, AppState } from 'react-native';
 import estilos from './Style';
 import RenderItem from './Funcionalidades';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import PushNotification from 'react-native-push-notification';
 // const tasks = [
-
 // ];
 export interface Task{
   titulo:string,
   done:boolean,
   date:Date,
-  id:string
+  id:string,
+  notificationId ?: number
 }
-
 export default function Tareas(){
   const [text, setText]=useState('')
   const [tasks,setTasks]=useState<Task[]>([])
   const [showDatePicker,setshowDatePicker]=useState(false)
   const [showTimePicker,setshowTimePicker]=useState(false)
   const [selectDate,setselectDate]=useState(new Date)
-
-  const addTask=()=>{
-    if(text.trim() === ''){
-      Alert.alert('Por favor ingrese una Tarea');
-      return;
+  useEffect(()=>{
+    PushNotification.configure({
+      onNotification: function(notification){
+        console.log('NOTIFICATION', notification)
+        if(notification.data && notification.data.task){
+          checkAndUpdateOverdueTasks()
+        }
+      },
+      requestPermissions:false
+    })
+    PushNotification.createChannel({
+      channelId:"task-reminders",
+      channelName:"Recordatorio de Tareas",
+      channelDescription:"Noificaciones para Tareas Programadas",
+      playSound:true,
+      soundName:"default",
+      importance:4,
+      vibrate:true
+    },
+    (created)=>console.log(`Canal creado:${created}`)
+  )
+  getData()
+  const handleAppStatteChange=(nextAppState:string)=>{
+    if(nextAppState==='active'){
+      checkAndUpdateOverdueTasks()
     }
-    const tmp=[...tasks]
-    const newTask={
-      id:Date.now().toString(),
-      titulo:text.trim(),
-      done:false,
-      date:selectDate
-    }
-    tmp.push(newTask)
-    setTasks(tmp)
-    storeData(tmp)
-    setText('')
-    setselectDate(new Date())
   }
-
-
+  const subscription = AppState.addEventListener('change',handleAppStatteChange)
+  return ()=>{
+    subscription?.remove()
+  }
+  },[])
+  const checkAndUpdateOverdueTasks = async ()=>{
+    try {
+      const value = await AsyncStorage.getItem('my-Todo')
+      if(value !== null){
+        const storedTasks = JSON.parse(value)
+        const tasksWithDates = storedTasks.map((task:any)=>({
+          ...task,
+          date:new Date(task.date)
+        }))
+        setTasks([...tasksWithDates])
+      }
+    } catch (e) {
+      console.log('Error: ',e)      
+    }
+  }
   const storeData = async (value:Task[])=>{
     try {
       await AsyncStorage.setItem('Todo',JSON.stringify(value))
@@ -55,31 +80,91 @@ export default function Tareas(){
       const value = await AsyncStorage.getItem('Todo')
       if (value !== null) {
         const Tlocals = JSON.parse(value)
-        const TDate=Tlocals.map((j:any)=>({
+        const tasksWithDates=Tlocals.map((j:any)=>({
           ...j,
-          date:new Date(TDate)
+          date:new Date(j.date)
         }))
-        setTasks(TDate)
+        setTasks(tasksWithDates)
       }
     } catch (error) {
       console.log('Error getting data: ', error)
     }
   }
-  useEffect(()=>{
-    getData()
-  },[])
-  
+  const scheduleNotification = (task:Task)=>{
+    const now = new Date()
+    const taskDate = task.date
+    if(taskDate>now){
+      const notificationId = Math.floor(Math.random()*1000000)
+      PushNotification.localNotificationSchedule({
+        id:notificationId,
+        channelId:"task-reminders",
+        title:"Recordatorio de Tarea",
+        message:`Es hora de ${task.titulo}`,
+        date:taskDate,
+        data:{
+          taskId:task.id,
+          taskTitle:task.titulo
+        },
+        allowWhileIdle:true,
+        repeatType:undefined
+      })
+      return notificationId
+    }
+    return undefined
+  }
+  const cancelNotification=(notificationId:number)=>{
+    PushNotification.cancelLocalNotification({id:notificationId.toString()})
+  }
+  const generateTaskId=()=>{
+    return Date.now().toString() + Math.random().toString(36).substr(2,9)
+  }
+    const addTask=()=>{
+    if(text.trim() === ''){
+      Alert.alert('Por favor ingrese una Tarea');
+      return;
+    }
+    const tmp=[...tasks]
+    const taskId=generateTaskId()
+    const newTask={
+      id:taskId,
+      titulo:text.trim(),
+      done:false,
+      date:selectDate
+    }
+    const notificationId = scheduleNotification(newTask)
+    if(notificationId){
+      newTask.notificationId = notificationId
+    }
+    tmp.push(newTask)
+    setTasks(tmp)
+    storeData(tmp)
+    setText('')
+    setselectDate(new Date())
+    if(notificationId){
+      Alert.alert(
+        'Tarea Agregada',
+        `La tarea "${newTask.titulo}" ha sido programda para ${formatDateTime(selectDate)}`
+      )
+    }
+  }
   const markDone=(task:Task)=>{
     const tmp = [...tasks]
     const index=tmp.findIndex(tu=>tu.id===task.id)
     if(index !== -1){
       tmp[index].done = !tmp[index].done
+      if(tmp[index].done && tmp[index].notificationId){
+        cancelNotification(tmp[index].notificationId)
+      }else if (!tmp[index].done) {
+        const notificationId = scheduleNotification(tmp[index])
+        if (notificationId) {
+          tmp[index].notificationId = notificationId
+        }
+      }
       setTasks(tmp)
       storeData(tmp)
     }
   }
-
-  const deleteF=(taskId:string)=>{
+  const deleteF=(task:Task)=>{
     Alert.alert(
       '¿Desea Eliminar?',
       'Eliminar la tarea',
@@ -88,7 +173,12 @@ export default function Tareas(){
         {text:'Eliminar',style:'destructive',
           onPress:()=>{
             const tmp = [...tasks]
-            const index=tmp.filter(tu=>tu.id !== taskId)
+            const index= tasks.findIndex(tu=>tu.id===task.id)
+            if (index !==-1) {
+              if (task.notificationId) {
+                cancelNotification(task.notificationId)
+              }              
+            }
             setTasks(tmp)
             storeData(tmp)
           }
@@ -97,14 +187,12 @@ export default function Tareas(){
     )
     
   }
-
   const onDateChange=(event:any,date?:Date)=>{
     setshowDatePicker(false)
     if(date){
       setselectDate(date)
     }
   }
-
   const onTimeChange=(event:any,time?:Date)=>{
     setshowTimePicker(false)
     if(time){
@@ -114,7 +202,6 @@ export default function Tareas(){
       setselectDate(NDT)
     }
   }
-
   const formatDateTime=(date:Date)=>{
     return date.toLocaleString('es-Es',{
       year:'numeric',
@@ -125,7 +212,13 @@ export default function Tareas(){
     }
     )
   }
-
+  const testNotification=()=>{
+    PushNotification.localNotification({
+      channelId:"task-reminders",
+      title:"Prueba OK",
+      message:"Las Notificaciones Funcionan OK!"
+    })
+  }
   return(
     <View style={estilos.contenedorApp}>
       <ScrollView>
@@ -144,6 +237,11 @@ export default function Tareas(){
         onPress={addTask}>
           <Text style={estilos.textoApp4}>
             Agregar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={testNotification}>
+          <Text>
+            Probar
+          </Text>
         </TouchableOpacity>
       </View>
       <View>
@@ -190,7 +288,6 @@ export default function Tareas(){
         />
       )}
       </ScrollView>
-      
     </View>
   ) 
 }
