@@ -22,7 +22,7 @@ export default function Tareas(){
   const [selectDate,setselectDate]=useState(new Date)
   useEffect(()=>{
     PushNotification.configure({
-      onNotification: function(notification){
+      onNotification: function(notification:any){
         console.log('NOTIFICATION', notification)
         if(notification.data && notification.data.task){
           checkAndUpdateOverdueTasks()
@@ -39,7 +39,7 @@ export default function Tareas(){
       importance:4,
       vibrate:true
     },
-    (created)=>console.log(`Canal creado:${created}`)
+    (created:boolean)=>console.log(`Canal creado:${created}`)
   )
   getData()
   const handleAppStatteChange=(nextAppState:string)=>{
@@ -54,7 +54,7 @@ export default function Tareas(){
   },[])
   const checkAndUpdateOverdueTasks = async ()=>{
     try {
-      const value = await AsyncStorage.getItem('my-Todo')
+      const value = await AsyncStorage.getItem('Todo')
       if(value !== null){
         const storedTasks = JSON.parse(value)
         const tasksWithDates = storedTasks.map((task:any)=>({
@@ -125,7 +125,7 @@ export default function Tareas(){
     }
     const tmp=[...tasks]
     const taskId=generateTaskId()
-    const newTask={
+    const newTask: Task = {
       id:taskId,
       titulo:text.trim(),
       done:false,
@@ -170,17 +170,19 @@ export default function Tareas(){
       'Eliminar la tarea',
       [
         {text:'Cancelar',style:'cancel'},
-        {text:'Eliminar',style:'destructive',
+        { text:'Eliminar',
+          style:'destructive',
           onPress:()=>{
             const tmp = [...tasks]
             const index= tasks.findIndex(tu=>tu.id===task.id)
             if (index !==-1) {
               if (task.notificationId) {
                 cancelNotification(task.notificationId)
-              }              
+              }
+              tmp.splice(index, 1)
+              setTasks(tmp)
+              storeData(tmp)              
             }
-            setTasks(tmp)
-            storeData(tmp)
           }
         }
       ]
@@ -263,7 +265,7 @@ export default function Tareas(){
           <RenderItem
           item={item}
           markDone={markDone}
-          deleteF={()=>deleteF(item.id)}
+          deleteF={()=>deleteF(item)}
           />
         )}
         showsVerticalScrollIndicator={false}
